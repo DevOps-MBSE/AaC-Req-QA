@@ -1,0 +1,7 @@
+project:
+  name: aac-req-qa
+  description: A natural language processor to evaluate the quality of your requirements.
+  uses:
+    - name: openai
+      version: 1.30.5
+      

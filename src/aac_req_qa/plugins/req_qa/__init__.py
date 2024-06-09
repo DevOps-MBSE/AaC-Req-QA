@@ -39,9 +39,7 @@ def run_shall_statement_quality(
 
 @hookimpl
 def register_plugin() -> None:
-    """
-    Registers information about the plugin for use in the CLI.
-    """
+    """Registers information about the plugin for use in the CLI."""
 
     active_context = LanguageContext()
     req_qa_aac_file = join(dirname(__file__), req_qa_aac_file_name)

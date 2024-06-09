@@ -28,13 +28,21 @@ test_dependencies = [
 setup(
     version="0.0.1",
     name="aac-req-qa",
+    license="MIT License",
+    long_description=readme_description,
+    long_description_content_type="text/markdown",
     packages=find_packages(where=".", exclude="tests"),
     package_dir={"": "src"},
     package_data={"": ["*.aac", "*.jinja2", "*.yaml"]},
     install_requires=runtime_dependencies,
+    setup_requires=test_dependencies,
     tests_require=test_dependencies,
     extras_require={"test": test_dependencies},
-    entry_points={
-        "aac": ["aac-req-qa=aac_req_qa"],
-    },
+    classifiers=[
+        "Programming Language :: Python :: 3.10",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Topic :: Scientific/Engineering",
+    ],
+    keywords=["MBSE", "Requirements", "QA"],
 )

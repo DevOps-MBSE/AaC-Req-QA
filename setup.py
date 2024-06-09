@@ -14,6 +14,7 @@ runtime_dependencies = [
 ]
 
 test_dependencies = [
+    "tox >= 3.24",
     "nose2 ~= 0.10.0",
     "coverage ~= 6.0",
     "flake8 ~= 4.0",
@@ -27,8 +28,10 @@ setup(
     version="0.0.1",
     name="aac-req-qa",
     packages=find_packages(where=".", exclude="tests"),
+    package_dir={"": "src"},
     package_data={"": ["*.aac", "*.jinja2", "*.yaml"]},
     install_requires=runtime_dependencies,
+    tests_require=test_dependencies,
     extras_require={"test": test_dependencies},
     entry_points={
         "aac": ["aac-req-qa=aac_req_qa"],

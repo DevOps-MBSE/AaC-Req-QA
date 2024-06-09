@@ -7,17 +7,15 @@
 from typing import Any
 
 import os
+from openai import OpenAI
 
 from aac.context.definition import Definition
-from aac.context.language_context import LanguageContext
-from aac.context.source_location import SourceLocation
 from aac.execute.aac_execution_result import (
     ExecutionResult,
     ExecutionStatus,
     ExecutionMessage,
     MessageLevel,
 )
-from aac.in_out.files.aac_file import AaCFile
 
 plugin_name = "Req QA"
 
@@ -51,7 +49,6 @@ Take a step back and think step by step about how to achieve the best possible o
 # OUTPUT INSTRUCTIONS
 
 - Provide a summary of the requirement in less than 30 words in a section called REQUIREMENT SUMMARY:.
-
 - In a section called QUALITY ASSESSMENT:, perform the following steps for quality characteristic:
 
 1. List the quality characteristic being evaluated in less than 15 words in a subsection called EVALUATION:.
@@ -68,9 +65,122 @@ Take a step back and think step by step about how to achieve the best possible o
 
 # INPUT:
 
-The rotary management system shall prevent the user from entering a negative value for the number of rotations. 
-
 """
+
+
+def get_client():
+    """Get the client for the AI model."""
+
+    # returns client, model, error_bool, execution_result_if_error
+    aac_ai_url = os.getenv("AAC_AI_URL")
+    aac_ai_model = os.getenv("AAC_AI_MODEL")
+    aac_ai_key = os.getenv("AAC_AI_KEY")
+
+    if ((aac_ai_url is None or aac_ai_url == "")
+            or (aac_ai_model is None or aac_ai_model == "")
+            or (aac_ai_key is None or aac_ai_key == "")):
+        return None, None, True, ExecutionResult(
+            plugin_name,
+            "Shall statement quality",
+            ExecutionStatus.CONSTRAINT_WARNING,
+            [
+                ExecutionMessage(
+                    "The OPEN_AI_URL, OPEN_AI_MODEL, or OPEN_AI_KEY environment variable is not set. Unable to evaluate the Shall statement quality constraint.",
+                    MessageLevel.WARNING,
+                    None,
+                    None,
+                )
+            ],
+        )
+    else:
+        return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key), aac_ai_model, False, None
+
+
+def get_shall(definition):
+    """Get the shall statement from the definition."""
+
+    # returns shall, error_bool, execution_result_if_error
+    shall = getattr(definition.instance, "shall", None)
+    if not isinstance(shall, str):
+        return None, True, ExecutionResult(
+            plugin_name,
+            "Shall statement quality",
+            ExecutionStatus.GENERAL_FAILURE,
+            [
+                ExecutionMessage(
+                    "The shall statement is not a string.",
+                    MessageLevel.ERROR,
+                    definition.source,
+                    None,
+                )
+            ],
+        )
+
+    if len(shall) == 0:
+        return None, True, ExecutionResult(
+            plugin_name,
+            "Shall statement quality",
+            ExecutionStatus.GENERAL_FAILURE,
+            [
+                ExecutionMessage(
+                    "The shall statement is empty.",
+                    MessageLevel.ERROR,
+                    definition.source,
+                    None,
+                )
+            ],
+        )
+
+    return shall, False, None
+
+
+def generate(client, model, prompt):
+    """
+    Generate AI response based on the given prompt.
+
+    Args:
+        client: The client for the AI model.
+        model: The AI model to use for generating the response.
+        prompt: The input prompt for generating the response.
+
+    Returns:
+        The generated AI response.
+    """
+    response = "AI response goes here"
+    r = client.chat.completions.create(
+        messages=[{"role": "user", "content": prompt}],
+        model=model,
+    )
+    response = r.choices[0].message.content
+    return response
+
+
+def check_req(definition):
+    """
+    Check if the definition is a requirement.
+
+    Args:
+        definition: The definition to be checked.
+
+    Returns:
+        An ExecutionResult if the definition is not a requirement, otherwise None.
+    """
+    if definition.get_root_key() != "req":
+        return ExecutionResult(
+            plugin_name,
+            "Shall statement quality",
+            ExecutionStatus.SUCCESS,
+            [
+                ExecutionMessage(
+                    "No req to evaluate",
+                    MessageLevel.INFO,
+                    definition.source,
+                    None,
+                )
+            ],
+        )
+    else:
+        return None
 
 
 def shall_statement_quality(
@@ -90,54 +200,39 @@ def shall_statement_quality(
     """
 
     # Only evaluate req root keys.
-    if definition.get_root_key() != "req":
-        return ExecutionResult(
-            plugin_name,
-            "Shall statement quality",
-            ExecutionStatus.SUCCESS ,
-            [
-                ExecutionMessage(
-                    "No req to evaluate",
-                    MessageLevel.SUCCESS,
-                    definition.source,
-                    None,
-                )
-            ],
+    is_req = check_req(definition)
+    if is_req is not None:
+        return is_req
+
+    client, model, client_error, error_result = get_client()
+    if client_error:
+        return error_result
+
+    shall, shall_error, shall_result = get_shall(definition)
+    if shall_error:
+        return shall_result
+
+    qa_prompt = f"{PROMPT_TEMPLATE}\n{shall}"
+
+    result = generate(client, model, qa_prompt)
+
+    if "A (Excellent)" in result or "B (High)" in result:
+
+        status = ExecutionStatus.SUCCESS
+        messages: list[ExecutionMessage] = []
+
+        return ExecutionResult(plugin_name, "Shall statement quality", status, messages)
+
+    else:
+
+        status = ExecutionStatus.GENERAL_FAILURE
+        messages: list[ExecutionMessage] = []
+        error_msg = ExecutionMessage(
+            result,
+            MessageLevel.ERROR,
+            definition.source,
+            None,
         )
+        messages.append(error_msg)
 
-    # Check to see if the env variables OPEN_AI_URL, OPEN_AI_MODEL, and OPEN_AI_KEY exist and have a value
-    # If they do not exist or have no value, return an error message
-    open_ai_url = os.getenv("OPEN_AI_URL")
-    open_ai_model = os.getenv("OPEN_AI_MODEL")
-    open_ai_key = os.getenv("OPEN_AI_KEY")
-
-    if ((open_ai_url is None or open_ai_url == "") or
-        (open_ai_model is None or open_ai_model == "") or
-        (open_ai_key is None or open_ai_key == "")):
-        return ExecutionResult(
-            plugin_name,
-            "Shall statement quality",
-            ExecutionStatus.CONSTRAINT_WARNING ,
-            [
-                ExecutionMessage(
-                    "The OPEN_AI_URL, OPEN_AI_MODEL, or OPEN_AI_KEY environment variable is not set. Unable to evaluate the Shall statement quality constraint.",
-                    MessageLevel.WARNING,
-                    definition.source,
-                    None,
-                )
-            ],
-        )
-
-    # TODO: rewrite the code below to implement your constraint logic
-    # you can get the source and location from the definition for messages
-    status = ExecutionStatus.GENERAL_FAILURE
-    messages: list[ExecutionMessage] = []
-    error_msg = ExecutionMessage(
-        "The Shall statement quality constraint for the Req QA plugin has not been implemented yet.",
-        MessageLevel.ERROR,
-        definition.source,
-        None,
-    )
-    messages.append(error_msg)
-
-    return ExecutionResult(plugin_name, "Shall statement quality", status, messages)
+        return ExecutionResult(plugin_name, "Shall statement quality", status, messages)

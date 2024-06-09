@@ -48,7 +48,7 @@ jobs:
           name: aac_req_qa_wheel
           path: dist/
   
-   deploy_artifacts:
+  deploy_artifacts:
     name: Deploy Artifacts
     runs-on: ubuntu-22.04
     needs: build_deployment_artifacts

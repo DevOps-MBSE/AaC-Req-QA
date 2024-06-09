@@ -34,15 +34,15 @@ jobs:
       - name: Install the AaC Package
         run: pip install -e .[test]
 
-      - name: Run Tox Tests With Coverage
-        run: tox -e py310
-  
       - name: Lint with flake8
         run: flake8 .
 
+      - name: Run Tox Tests With Coverage
+        run: tox -e py310
+
       - name: Build distribution
         run: |
-          python setup.py sdist bdist_wheel
+          python -m build
         working-directory: ${{ github.workspace }}
 
       - name: Upload distribution

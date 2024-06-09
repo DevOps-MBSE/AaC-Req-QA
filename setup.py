@@ -14,6 +14,7 @@ runtime_dependencies = [
 ]
 
 test_dependencies = [
+    "build>=1.0.0",
     "tox >= 3.24",
     "nose2 ~= 0.10.0",
     "coverage ~= 6.0",

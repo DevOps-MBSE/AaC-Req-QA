@@ -43,6 +43,7 @@ If you have a proxy, set the proxy environment variables.
 
 - AAC_HTTP_PROXY:  The HTTP proxy.  Example:  http://userid:password@myproxy.myorg.com:80
 - AAC_HTTPS_PROXY:  The HTTPS proxy.  Example:  https://userid:password@myproxy.myorg.com:443
+- AAC_SSL_VERIFY:  Allows you to disable SSL verification.  Value must be `true` or `false` (default: `true`).
 
 ### Eval-Req Command
 

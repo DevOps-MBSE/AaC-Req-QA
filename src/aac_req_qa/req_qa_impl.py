@@ -82,6 +82,12 @@ def get_client():
 
     aac_http_proxy = os.getenv("AAC_HTTP_PROXY")
     aac_https_proxy = os.getenv("AAC_HTTPS_PROXY")
+    aac_ssl_verify = os.getenv("AAC_SSL_VERIFY")
+
+    if (aac_ssl_verify is None or aac_ssl_verify == "" or aac_ssl_verify.lower() != "false"):
+        aac_ssl_verify = True
+    else:
+        aac_ssl_verify = False
 
     if ((aac_ai_url is None or aac_ai_url == "")
             or (aac_ai_model is None or aac_ai_model == "")
@@ -105,7 +111,7 @@ def get_client():
 
         # return client with proxy configuration
         proxies = {'http://': aac_http_proxy, 'https://': aac_https_proxy}
-        http_client = httpx.Client(proxies=proxies)
+        http_client = httpx.Client(proxies=proxies, verify=aac_ssl_verify)
         return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key, http_client=http_client), aac_ai_model, False, None
 
     # return client without proxy configuration

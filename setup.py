@@ -26,7 +26,7 @@ test_dependencies = [
 ]
 
 setup(
-    version="0.2.4",
+    version="0.2.5",
     name="aac-req-qa",
     license="MIT License",
     url="https://github.com/DevOps-MBSE/AaC-Req-QA",

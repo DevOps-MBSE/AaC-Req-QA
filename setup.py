@@ -26,7 +26,7 @@ test_dependencies = [
 ]
 
 setup(
-    version="0.2.0",
+    version="0.2.1",
     name="aac-req-qa",
     license="MIT License",
     url="https://github.com/DevOps-MBSE/AaC-Req-QA",
@@ -39,9 +39,6 @@ setup(
     setup_requires=test_dependencies,
     tests_require=test_dependencies,
     extras_require={"test": test_dependencies},
-    entry_points={
-        "aac": ["aac-req-qa=aac_req_qa"],
-    },
     classifiers=[
         "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: MIT License",

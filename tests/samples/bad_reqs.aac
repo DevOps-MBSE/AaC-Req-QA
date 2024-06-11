@@ -1,0 +1,16 @@
+req:
+  name: Test 01
+  id: REQ_TEST_01
+  shall:  The req qa shall assume system engineers are dumb and can't write good requirements.
+
+---
+req:
+  name: Test 02
+  id: REQ_TEST_02
+  shall:  The req qa shall empower the team, do amazing things, and enable greatness.
+
+---
+req:
+  name: Test 03
+  id: REQ_TEST_03
+  shall:  This really isn't even a shall statement even though it contains the word.

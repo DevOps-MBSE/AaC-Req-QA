@@ -1,0 +1,20 @@
+plugin:
+  name: Req QA
+  package: aac_req_qa
+  description: |
+    Evaluate the quality of your requirements.
+  commands:
+    - name: eval-req
+      help_text: |
+        Perform AI analysis on requirements and provides feedback on each.
+      input:
+        - name: architecture-file
+          type: file
+          description: |
+            A path to a YAML file containing an AaC-defined requirements to evaluate.
+  schema_constraints:
+    - name: Shall statement quality
+      description: |
+        Check requirement shall statement to ensure it meets good system engineering quality standards.
+      universal: true
+    

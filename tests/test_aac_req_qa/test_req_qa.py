@@ -1,9 +1,15 @@
 from unittest import TestCase
+from typing import Tuple
 
 import os
+import shutil
+import tempfile
+
+from click.testing import CliRunner
 
 from aac.context.language_context import LanguageContext
-from aac_req_qa.plugins.req_qa.req_qa_impl import shall_statement_quality
+from aac.execute.command_line import cli, initialize_cli
+from aac_req_qa.req_qa_impl import shall_statement_quality
 
 # Thanks to sfc-gh-jcarroll
 # openai test mock taken from:  https://github.com/openai/openai-python/issues/715#issuecomment-1809203346
@@ -75,6 +81,19 @@ def create_stream_chat_completion(response: str, role: str = "assistant"):
         )
 
 
+EXCELLENT_RESPONSE = """
+This is a mocked test result for an Excellent shall statement.
+
+REQUIREMENT QUALITY SCORE: A (Excellent)
+"""
+
+MEDIUM_RESPONSE = """
+This is a mocked test result for a Medium shall statement.
+
+REQUIREMENT QUALITY SCORE: C (Medium)
+"""
+
+
 class TestReqQA(TestCase):
 
     orig_aac_ai_url = ""
@@ -98,6 +117,51 @@ class TestReqQA(TestCase):
             os.environ["AAC_AI_KEY"] = self.orig_aac_ai_key
         if self.orig_aac_ai_model is not None:
             os.environ["AAC_AI_MODEL"] = self.orig_aac_ai_model
+
+    def test_eval_req(self):
+
+        # Let's just test via CLI for now.
+        pass
+
+    def run_eval_req_cli_command_with_args(self, args: list[str]) -> Tuple[int, str]:
+        """Utility function to invoke the CLI command with the given arguments."""
+        initialize_cli()
+        runner = CliRunner()
+        result = runner.invoke(cli, ["eval-req"] + args)
+        exit_code = result.exit_code
+        std_out = str(result.stdout)
+        output_message = std_out.strip().replace("\x1b[0m", "")
+        return exit_code, output_message
+
+    @patch("openai.resources.chat.Completions.create")
+    def test_cli_eval_req(self, openai_create):
+
+        openai_create.return_value = create_chat_completion(EXCELLENT_RESPONSE)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            aac_file_path = os.path.join(os.path.dirname(__file__), "good_reqs.aac")
+            temp_aac_file_path = os.path.join(temp_dir, "my_plugin.aac")
+            shutil.copy(aac_file_path, temp_aac_file_path)
+
+            args = [temp_aac_file_path]
+            exit_code, output_message = self.run_eval_req_cli_command_with_args(args)
+        
+            self.assertEqual(0, exit_code, f"Expected success but failed with message: {output_message}")  # asserts the command ran successfully
+
+    @patch("openai.resources.chat.Completions.create")
+    def test_cli_eval_req_failure(self, openai_create):
+
+        openai_create.return_value = create_chat_completion(MEDIUM_RESPONSE)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            aac_file_path = os.path.join(os.path.dirname(__file__), "bad_reqs.aac")
+            temp_aac_file_path = os.path.join(temp_dir, "my_plugin.aac")
+            shutil.copy(aac_file_path, temp_aac_file_path)
+
+            args = [temp_aac_file_path]
+            exit_code, output_message = self.run_eval_req_cli_command_with_args(args)
+        
+            self.assertNotEqual(0, exit_code)
 
     def test_shall_statement_quality_no_req(self):
 
@@ -128,11 +192,6 @@ class TestReqQA(TestCase):
     @patch("openai.resources.chat.Completions.create")
     def test_shall_statement_quality(self, openai_create):
 
-        EXCELLENT_RESPONSE = """
-This is a mocked test result for an Excellent shall statement.
-
-REQUIREMENT QUALITY SCORE: A (Excellent)
-"""
         openai_create.return_value = create_chat_completion(EXCELLENT_RESPONSE)
 
         context = LanguageContext()
@@ -147,11 +206,6 @@ REQUIREMENT QUALITY SCORE: A (Excellent)
     @patch("openai.resources.chat.Completions.create")
     def test_shall_statement_quality_failure(self, openai_create):
 
-        MEDIUM_RESPONSE = """
-This is a mocked test result for a Medium shall statement.
-
-REQUIREMENT QUALITY SCORE: C (Medium)
-"""
         openai_create.return_value = create_chat_completion(MEDIUM_RESPONSE)
 
         context = LanguageContext()

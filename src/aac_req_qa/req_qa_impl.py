@@ -9,6 +9,7 @@ from typing import Any
 import os
 from openai import OpenAI
 
+from aac.context.language_context import LanguageContext
 from aac.context.definition import Definition
 from aac.execute.aac_execution_result import (
     ExecutionResult,
@@ -56,16 +57,18 @@ Take a step back and think step by step about how to achieve the best possible o
 
 3. Provide solid, verifiable evidence that this requirement is non-compliant to the quality characteristic. Provide rationale for each, and DO NOT make any of those up. They must be 100% real and externally verifiable. Put each of these in a subsection called QUALITY NON-COMPLIANCE ASSESSMENT:.
 
-4. Provide a REQUIREMENT QUALITY score in a section called REQUIREMENT RATING:, that has the following tiers:
+4. Provide a REQUIREMENT QUALITY score in a section called REQUIREMENT RATING:, that has the following tiers in these exact words:
    A (Excellent)
    B (High)
    C (Medium)
    D (Low)
-   F (Terrible)
+   F (Poor)
 
 # INPUT:
 
 """
+
+TEMPERATURE = 0.1
 
 
 def get_client():
@@ -85,7 +88,7 @@ def get_client():
             ExecutionStatus.CONSTRAINT_WARNING,
             [
                 ExecutionMessage(
-                    "The OPEN_AI_URL, OPEN_AI_MODEL, or OPEN_AI_KEY environment variable is not set. Unable to evaluate the Shall statement quality constraint.",
+                    "The AAC_AI_URL, AAC_AI_MODEL, or AAC_AI_KEY environment variable is not set. Unable to evaluate the Shall statement quality constraint.",
                     MessageLevel.WARNING,
                     None,
                     None,
@@ -150,6 +153,7 @@ def generate(client, model, prompt):
     r = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
         model=model,
+        temperature=TEMPERATURE,
     )
     response = r.choices[0].message.content
     return response
@@ -183,6 +187,29 @@ def check_req(definition):
         return None
 
 
+def eval_req(architecture_file: str) -> ExecutionResult:
+    """
+     Business logic for allowing eval-req command to perform Perform AI analysis on requirements and provides feedback on each.
+
+     Args:
+         architecture_file (str): A path to a YAML file containing an AaC-defined requirements to evaluate.
+
+
+    Returns:
+         The results of the execution of the eval-req command.
+    """
+    context = LanguageContext()
+    status = ExecutionStatus.SUCCESS
+    messages = []
+    for definition in context.parse_and_load(architecture_file):
+        result = shall_statement_quality(definition.instance, definition, definition.instance)
+        if not result.is_success():
+            status = ExecutionStatus.GENERAL_FAILURE
+        messages.extend(result.messages)
+        
+    return ExecutionResult(plugin_name, "eval-req", status, messages)  
+
+
 def shall_statement_quality(
     instance: Any, definition: Definition, defining_schema: Any
 ) -> ExecutionResult:
@@ -212,6 +239,8 @@ def shall_statement_quality(
     if shall_error:
         return shall_result
 
+    id = getattr(definition.instance, "id", None)
+
     qa_prompt = f"{PROMPT_TEMPLATE}\n{shall}"
 
     result = generate(client, model, qa_prompt)
@@ -221,6 +250,14 @@ def shall_statement_quality(
         status = ExecutionStatus.SUCCESS
         messages: list[ExecutionMessage] = []
 
+        success_msg = ExecutionMessage(
+            f"Requirement {id} passed quality check\n\nINPUT:  {shall}\n\n{result}",
+            MessageLevel.INFO,
+            definition.source,
+            None,
+        )
+        messages.append(success_msg)
+
         return ExecutionResult(plugin_name, "Shall statement quality", status, messages)
 
     else:
@@ -228,7 +265,7 @@ def shall_statement_quality(
         status = ExecutionStatus.GENERAL_FAILURE
         messages: list[ExecutionMessage] = []
         error_msg = ExecutionMessage(
-            result,
+            f"Requirement {id} failed quality check\n\nINPUT:  {shall}\n\n{result}",
             MessageLevel.ERROR,
             definition.source,
             None,

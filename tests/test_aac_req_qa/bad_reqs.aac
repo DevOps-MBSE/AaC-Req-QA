@@ -1,0 +1,6 @@
+req:
+  name: Test 01
+  id: REQ_TEST_01
+  shall:  |
+    The req qa shall evaluate each req shall statement, utilize AI to create an evaluation, ensure
+    that evaluation includes a letter grade score, and report a quality score for each requirement in the AaC model.

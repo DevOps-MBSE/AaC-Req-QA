@@ -107,18 +107,19 @@ def get_client():
         )
 
     if not aac_ssl_verify:
-        print("Warning: SSL verification is disabled.")
+        print("WARNING: SSL verification is disabled.")
 
-    if ((aac_http_proxy is None or aac_http_proxy == "")
-            or (aac_https_proxy is None or aac_https_proxy == "")):
+    if ((aac_http_proxy is not None and len(aac_http_proxy) > 0)
+            or (aac_https_proxy is not None and len(aac_https_proxy) > 0)):
 
         # return client with proxy configuration
+        print("INFO: Using proxy configuration.")
         proxies = {'http://': aac_http_proxy, 'https://': aac_https_proxy}
         http_client = httpx.Client(proxies=proxies, verify=aac_ssl_verify)
         return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key, http_client=http_client), aac_ai_model, False, None
 
     # return client without proxy configuration
-    return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key, verify=aac_ssl_verify), aac_ai_model, False, None
+    return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key), aac_ai_model, False, None
 
 
 def get_shall(definition):

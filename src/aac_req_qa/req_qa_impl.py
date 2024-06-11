@@ -206,8 +206,8 @@ def eval_req(architecture_file: str) -> ExecutionResult:
         if not result.is_success():
             status = ExecutionStatus.GENERAL_FAILURE
         messages.extend(result.messages)
-        
-    return ExecutionResult(plugin_name, "eval-req", status, messages)  
+
+    return ExecutionResult(plugin_name, "eval-req", status, messages)
 
 
 def shall_statement_quality(

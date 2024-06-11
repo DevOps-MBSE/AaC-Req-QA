@@ -32,7 +32,7 @@ setup(
     url="https://github.com/DevOps-MBSE/AaC-Req-QA",
     long_description=readme_description,
     long_description_content_type="text/markdown",
-    packages=find_packages(where=".", exclude="tests"),
+    packages=find_packages(where="src"),
     package_dir={"": "src"},
     package_data={"": ["*.aac", "*.jinja2", "*.yaml"]},
     install_requires=runtime_dependencies,

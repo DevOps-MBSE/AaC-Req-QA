@@ -7,6 +7,7 @@
 from typing import Any
 
 import os
+import httpx
 from openai import OpenAI
 
 from aac.context.language_context import LanguageContext
@@ -79,6 +80,9 @@ def get_client():
     aac_ai_model = os.getenv("AAC_AI_MODEL")
     aac_ai_key = os.getenv("AAC_AI_KEY")
 
+    aac_http_proxy = os.getenv("AAC_HTTP_PROXY")
+    aac_https_proxy = os.getenv("AAC_HTTPS_PROXY")
+
     if ((aac_ai_url is None or aac_ai_url == "")
             or (aac_ai_model is None or aac_ai_model == "")
             or (aac_ai_key is None or aac_ai_key == "")):
@@ -95,8 +99,17 @@ def get_client():
                 )
             ],
         )
-    else:
-        return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key), aac_ai_model, False, None
+
+    if ((aac_http_proxy is None or aac_http_proxy == "")
+            or (aac_https_proxy is None or aac_https_proxy == "")):
+
+        # return client with proxy configuration
+        proxies = {'http://': aac_http_proxy, 'https://': aac_https_proxy}
+        http_client = httpx.Client(proxies=proxies)
+        return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key, http_client=http_client), aac_ai_model, False, None
+
+    # return client without proxy configuration
+    return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key), aac_ai_model, False, None
 
 
 def get_shall(definition):

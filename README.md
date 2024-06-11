@@ -39,7 +39,23 @@ endpoint in OpenAI or Azure OpenAI or a self-hosted endpoint using a tool like O
 - AAC_AI_MODEL:  The name of the LLM model.  Example:  mistral
 - AAC_AI_KEY:  The access key for the API.  If using a local model, any value will work but it must not be empty or missing.  Example: not-a-real-key
 
-Now when you run `aac check my_arch_model.aac` any `req` elements defined in your model will 
+If you have a proxy, set the proxy environment variables.
+
+- AAC_HTTP_PROXY:  The HTTP proxy.  Example:  http://userid:password@myproxy.myorg.com:80
+- AAC_HTTPS_PROXY:  The HTTPS proxy.  Example:  https://userid:password@myproxy.myorg.com:443
+
+### Eval-Req Command
+
+This plugin provides a new command called `eval-req` that will execute the requirements QA
+on a specified AaC file.  This will before the exact same evaluation as the constraint
+run by the `check` command, but will give you all the AI output for each requirement.  This
+allows you to get immediate feedback on all your requirements without all the other 
+constraints being invoked.
+
+### AaC Check
+
+This plugin adds a constraint plugin to AaC.  Now when you run `aac check my_arch_model.aac` 
+any `req` elements defined in your model will 
 have the shall statement evaluated for quality.  If the LLM determines the requirement meets
 the quality guidance the constraint will pass.  Otherwise the constraint will fail.
 

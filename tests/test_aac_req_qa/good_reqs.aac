@@ -7,10 +7,10 @@ req:
 req:
   name: Test 02
   id: REQ_TEST_02
-  shall:  The req qa shall pass if the quality score is a B or above.
+  shall:  The req qa shall pass if the quality score is a PASS.
 
 ---
 req:
   name: Test 03
   id: REQ_TEST_03
-  shall:  The req qa shall fail if the quality score is a C or below.
+  shall:  The req qa shall fail if the quality score is a FAIL.

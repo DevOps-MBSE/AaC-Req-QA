@@ -14,3 +14,9 @@ req:
   name: Test 03
   id: REQ_TEST_03
   shall:  The req-qa tool shall fail if the AI generated quality score is 'C (Medium)', 'D (Low)', or 'F (Poor)'.
+
+---
+req:
+  name: Test 04
+  id: REQ_TEST_04
+  shall:  The aac team shall develop and release a document titled System Engineering Management as Code Plan.

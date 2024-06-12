@@ -72,6 +72,10 @@ to perform consistently.  The LLM is tuned to reduce variation and provide relia
 performance to the greatest extent possible, but no guarantees can be made with the current
 state-of-the art LLM models.
 
+Performance is completely dependent on the performance of the LLM provided by the endpoint.
+This has been tested with Azure OpenAI using GPT-4 as well as Mistral 7B run within Ollama
+and had acceptable performance in both.  Performance with other models may be better or worse.
+
 ## Attribution
 
 We're adapting the [analize claims](https://github.com/danielmiessler/fabric/blob/main/patterns/analyze_claims/system.md) pattern

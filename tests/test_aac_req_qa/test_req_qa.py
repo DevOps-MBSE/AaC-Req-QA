@@ -81,16 +81,16 @@ def create_stream_chat_completion(response: str, role: str = "assistant"):
         )
 
 
-EXCELLENT_RESPONSE = """
-This is a mocked test result for an Excellent shall statement.
+GOOD_RESPONSE = """
+This is a mocked test result for an good shall statement.
 
-REQUIREMENT QUALITY SCORE: A (Excellent)
+REQUIREMENT RATING: REQ-QA-PASS (Good Requirement)
 """
 
-MEDIUM_RESPONSE = """
-This is a mocked test result for a Medium shall statement.
+BAD_RESPONSE = """
+This is a mocked test result for an good shall statement.
 
-REQUIREMENT QUALITY SCORE: C (Medium)
+REQUIREMENT RATING: REQ-QA-FAIL (Bad Requirement)
 """
 
 
@@ -136,7 +136,7 @@ class TestReqQA(TestCase):
     @patch("openai.resources.chat.Completions.create")
     def test_cli_eval_req(self, openai_create):
 
-        openai_create.return_value = create_chat_completion(EXCELLENT_RESPONSE)
+        openai_create.return_value = create_chat_completion(GOOD_RESPONSE)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             aac_file_path = os.path.join(os.path.dirname(__file__), "good_reqs.aac")
@@ -151,7 +151,7 @@ class TestReqQA(TestCase):
     @patch("openai.resources.chat.Completions.create")
     def test_cli_eval_req_failure(self, openai_create):
 
-        openai_create.return_value = create_chat_completion(MEDIUM_RESPONSE)
+        openai_create.return_value = create_chat_completion(BAD_RESPONSE)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             aac_file_path = os.path.join(os.path.dirname(__file__), "bad_reqs.aac")
@@ -192,7 +192,7 @@ class TestReqQA(TestCase):
     @patch("openai.resources.chat.Completions.create")
     def test_shall_statement_quality(self, openai_create):
 
-        openai_create.return_value = create_chat_completion(EXCELLENT_RESPONSE)
+        openai_create.return_value = create_chat_completion(GOOD_RESPONSE)
 
         context = LanguageContext()
         requirement_definition = context.get_definitions_by_name("aac.lang.Requirement")
@@ -206,7 +206,7 @@ class TestReqQA(TestCase):
     @patch("openai.resources.chat.Completions.create")
     def test_shall_statement_quality_failure(self, openai_create):
 
-        openai_create.return_value = create_chat_completion(MEDIUM_RESPONSE)
+        openai_create.return_value = create_chat_completion(BAD_RESPONSE)
 
         context = LanguageContext()
         requirement_definition = context.get_definitions_by_name("aac.lang.Requirement")

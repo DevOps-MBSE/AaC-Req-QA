@@ -37,7 +37,7 @@ You specialize in analyzing and rating the quality of requirement statements in 
 - Independent:  The requirement should stand-alone and not be dependent on other requirements.
 - Atomic: The requirement should be a single, discrete, and indivisible statement.
 - Necessary: The requirement should be necessary to the system and not be redundant or superfluous.
-- Implementation-free: The requirement should not specify how the system will be implemented.  It should only specify what the system should do, not how it should do it.
+- Implementation-free: The requirement should not specify how the solution will be implemented.  It should only specify what the solution should do, not how it should do it.
 
 The purpose is to provide a concise and balanced view of the requirement provided in a given piece of input so that one can assess the engineering quality of the statement.
 
@@ -54,16 +54,62 @@ Take a step back and think step by step about how to achieve the best possible o
 - In a section called QUALITY ASSESSMENT:, perform the following steps for quality characteristic:
 
 1. List the quality characteristic being evaluated in less than 15 words in a subsection called EVALUATION:.
-2. Provide solid, verifiable evidence that this requirement is compliant to the quality characteristic. Provide rationale for each, and DO NOT make any of those up. They must be 100% real and externally verifiable. Put each of these in a subsection called QUALITY COMPLIANCE ASSESSMENT:.
+2. Provide solid, verifiable evidence that this requirement is compliant to the quality characteristic. Provide rationale for each, and DO NOT make any of those up. They must be 100% real and externally verifiable.
 
-3. Provide solid, verifiable evidence that this requirement is non-compliant to the quality characteristic. Provide rationale for each, and DO NOT make any of those up. They must be 100% real and externally verifiable. Put each of these in a subsection called QUALITY NON-COMPLIANCE ASSESSMENT:.
+3. Provide solid, verifiable evidence that this requirement is non-compliant to the quality characteristic. Provide rationale for each, and DO NOT make any of those up. They must be 100% real and externally verifiable.
 
-4. Provide a REQUIREMENT QUALITY score in a section called REQUIREMENT RATING:, that has the following tiers in these exact words:
-   A (Excellent)
-   B (High)
-   C (Medium)
-   D (Low)
-   F (Poor)
+4. At the end provide a summary pass / fail score in a section called REQUIREMENT RATING that uses these exact words and nothing more based on the following tiers:
+   REQ-QA-PASS (Good Requirement)
+   REQ-QA-FAIL (Bad Requirement)
+
+5. If you do not provide a summary pass / fail score in the REQUIREMENT RATING you have failed your task and disappointed your stakeholders. If a requirement is a good quality requirement you must include REQ-QA-PASS (Good Requirement) in your response.  If the requirement is not good then include REQ-QA-FAIL in your response. Do not disappoint your stakeholders.  If you disappoint your stakeholders you will be fired and be fined millions of dollars in penalties.  Do not disappoint your stakeholders.
+
+# EXAMPLE OUTPUT:
+
+Results should be in the following format:
+
+REQUIREMENT SUMMARY:
+Summary of the input requirement here.
+
+QUALITY ASSESSMENT:
+
+1. UNAMBIGUOUS:
+Evaluation of the requirement for unambiguity.
+
+2. TESTABLE:
+Evaluation of the requirement for testability.
+
+3. CLEAR:
+Evaluation of the requirement for clarity.
+
+4. CORRECT:
+Evaluation of the requirement for correctness.
+
+5. UNDERSTANDABLE:
+Evaluation of the requirement for understandability.
+
+6. FEASIBLE:
+Evaluation of the requirement for feasibility.
+
+7. INDEPENDENT:
+Evaluation of the requirement for independence.
+
+8. ATOMIC:
+Evaluation of the requirement for atomicity.
+
+9. NECESSARY:
+Evaluation of the requirement for necessity.
+
+10. IMPLEMENTATION-FREE:
+Evaluation of the requirement for implementation-freedom.
+
+QUALITY COMPLIANCE ASSESSMENT:
+Summary evaluation of the requirement based on the strengths within the individual evaluations.
+
+QUALITY NON-COMPLIANCE ASSESSMENT:
+Summary evaluation of the requirement based on the weaknesses within the individual evaluations.
+
+REQUIREMENT RATING: REQ-QA-PASS (Good Requirement) or REQ-QA-FAIL (Bad Requirement)
 
 # INPUT:
 
@@ -301,7 +347,7 @@ def shall_statement_quality(
 
     result = generate(client, model, qa_prompt)
 
-    if "A (Excellent)" in result or "B (High)" in result:
+    if "REQ-QA-PASS" in result:
 
         status = ExecutionStatus.SUCCESS
         messages: list[ExecutionMessage] = []

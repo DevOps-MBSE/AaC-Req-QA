@@ -1,16 +1,16 @@
 req:
   name: Test 01
   id: REQ_TEST_01
-  shall:  The req qa shall report a quality score for each requirement in the AaC model.
+  shall:  The req-qa tool shall report a quality score as a letter grade for each requirement in the AaC model.
 
 ---
 req:
   name: Test 02
   id: REQ_TEST_02
-  shall:  The req qa shall pass if the AI generated quality score is 'A (Excellent)' or 'B (High)'.
+  shall:  The req-qa tool shall pass if the AI generated quality score is 'A (Excellent)' or 'B (High)'.
 
 ---
 req:
   name: Test 03
   id: REQ_TEST_03
-  shall:  The req qa shall fail if the AI generated quality score is a 'C (Medium)', 'D (Low)', or 'F (Poor)'.
+  shall:  The req-qa tool shall fail if the AI generated quality score is 'C (Medium)', 'D (Low)', or 'F (Poor)'.

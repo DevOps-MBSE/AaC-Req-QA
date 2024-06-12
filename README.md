@@ -36,8 +36,13 @@ Set the environment variables needed to access an OpenAI endpoint.  This may be 
 endpoint in OpenAI or Azure OpenAI or a self-hosted endpoint using a tool like Ollama or vLLM.
 
 - AAC_AI_URL:  The usl of the LLM endpoint.  Example:  https://localhost:11434/v1 
-- AAC_AI_MODEL:  The name of the LLM model.  Example:  mistral
+- AAC_AI_MODEL:  The name of the LLM model.  Example:  `mistral` for local (i.e. Ollama), `gpt-4` for OpenAI or Azure
 - AAC_AI_KEY:  The access key for the API.  If using a local model, any value will work but it must not be empty or missing.  Example: not-a-real-key
+
+If you wish to use an Azure OpenAI set the following environment variables.
+
+- AAC_AI_TYPE:  Set to "Azure", otherwise standard OpenAI client will be used.
+- AAC_AI_API_VERSION:  Set to your desired / supported API Version.  Example: 2023-12-01-preview
 
 If you have a proxy, set the proxy environment variables.
 

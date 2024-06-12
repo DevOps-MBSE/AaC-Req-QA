@@ -8,7 +8,7 @@ from typing import Any
 
 import os
 import httpx
-from openai import OpenAI
+from openai import (OpenAI, AzureOpenAI)
 
 from aac.context.language_context import LanguageContext
 from aac.context.definition import Definition
@@ -79,6 +79,8 @@ def get_client():
     aac_ai_url = os.getenv("AAC_AI_URL")
     aac_ai_model = os.getenv("AAC_AI_MODEL")
     aac_ai_key = os.getenv("AAC_AI_KEY")
+    aac_ai_type = os.getenv("AAC_AI_TYPE")
+    aac_ai_api_version = os.getenv("AAC_AI_API_VERSION")
 
     aac_http_proxy = os.getenv("AAC_HTTP_PROXY")
     aac_https_proxy = os.getenv("AAC_HTTPS_PROXY")
@@ -88,6 +90,24 @@ def get_client():
         aac_ssl_verify = True
     else:
         aac_ssl_verify = False
+
+    use_az = False
+    if aac_ai_type is not None and aac_ai_type.lower() == "azure":
+        use_az = True
+        if aac_ai_api_version is None or aac_ai_api_version == "":
+            return None, None, True, ExecutionResult(
+                plugin_name,
+                "Shall statement quality",
+                ExecutionStatus.GENERAL_FAILURE,
+                [
+                    ExecutionMessage(
+                        "The AAC_AI_Type is Azure but AAC_AI_API_VERSION is not set. Must provide both environment variables to use Azure AI.",
+                        MessageLevel.ERROR,
+                        None,
+                        None,
+                    )
+                ],
+            )
 
     if ((aac_ai_url is None or aac_ai_url == "")
             or (aac_ai_model is None or aac_ai_model == "")
@@ -116,10 +136,23 @@ def get_client():
         print("INFO: Using proxy configuration.")
         proxies = {'http://': aac_http_proxy, 'https://': aac_https_proxy}
         http_client = httpx.Client(proxies=proxies, verify=aac_ssl_verify)
-        return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key, http_client=http_client), aac_ai_model, False, None
+        if use_az:
+            return AzureOpenAI(
+                azure_endpoint=aac_ai_url,
+                api_key=aac_ai_key,
+                api_version=aac_ai_api_version,
+                http_client=http_client), aac_ai_model, False, None
+        else:
+            return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key, http_client=http_client), aac_ai_model, False, None
 
     # return client without proxy configuration
-    return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key), aac_ai_model, False, None
+    if use_az:
+        return AzureOpenAI(
+            azure_endpoint=aac_ai_url,
+            api_key=aac_ai_key,
+            api_version=aac_ai_api_version), aac_ai_model, False, None
+    else:
+        return OpenAI(base_url=aac_ai_url, api_key=aac_ai_key), aac_ai_model, False, None
 
 
 def get_shall(definition):

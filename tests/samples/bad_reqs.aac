@@ -8,6 +8,9 @@ req:
   name: Test 02
   id: REQ_TEST_02
   shall:  The req qa shall empower the team, do amazing things, and enable greatness.
+  attributes:
+    - name: no-req-qa
+      value: This is an HR policy we can't change.
 
 ---
 req:

@@ -207,7 +207,7 @@ def get_shall(definition):
     # returns shall, error_bool, execution_result_if_error
     shall = getattr(definition.instance, "shall", None)
     if not isinstance(shall, str):
-        return None, True, ExecutionResult(
+        return None, False, None, True, ExecutionResult(
             plugin_name,
             "Shall statement quality",
             ExecutionStatus.GENERAL_FAILURE,
@@ -222,7 +222,7 @@ def get_shall(definition):
         )
 
     if len(shall) == 0:
-        return None, True, ExecutionResult(
+        return None, False, None, True, ExecutionResult(
             plugin_name,
             "Shall statement quality",
             ExecutionStatus.GENERAL_FAILURE,
@@ -236,7 +236,13 @@ def get_shall(definition):
             ],
         )
 
-    return shall, False, None
+    attributes = getattr(definition.instance, "attributes", None)
+    if attributes is not None and len(attributes) > 0:
+        for req_attr in attributes:
+            if req_attr.name.lower() == "no-req-qa":
+                return shall, True, req_attr.value, False, None
+
+    return shall, False, None, False, None
 
 
 def generate(client, model, prompt):
@@ -337,11 +343,25 @@ def shall_statement_quality(
     if client_error:
         return error_result
 
-    shall, shall_error, shall_result = get_shall(definition)
+    shall, skip, skip_reason, shall_error, shall_result = get_shall(definition)
     if shall_error:
         return shall_result
 
     id = getattr(definition.instance, "id", None)
+
+    if skip:
+        status = ExecutionStatus.SUCCESS
+        messages: list[ExecutionMessage] = []
+
+        success_msg = ExecutionMessage(
+            f"Requirement {id} quality check skipped\n\nInput:  {shall}\n\nReason:  {skip_reason}",
+            MessageLevel.INFO,
+            definition.source,
+            None,
+        )
+        messages.append(success_msg)
+
+        return ExecutionResult(plugin_name, "Shall statement quality", status, messages)
 
     qa_prompt = f"{PROMPT_TEMPLATE}\n{shall}"
 

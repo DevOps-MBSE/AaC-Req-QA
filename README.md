@@ -57,17 +57,21 @@ environment variables.
 ### Eval-Req Command
 
 This plugin provides a new command called `eval-req` that will execute the requirements QA
-on a specified AaC file.  This will before the exact same evaluation as the constraint
-run by the `check` command, but will give you all the AI output for each requirement.  This
-allows you to get immediate feedback on all your requirements without all the other 
-constraints being invoked.
+on a specified AaC file.  This will perform an evaluation of each `req` in the AaC file based on
+INCOSE requirements quality guidelines, and will give you all the AI output for each requirement.
+Be aware, this performs a requirement-by-requirement evaluation with no context of surrounding
+requirements in the specification.  It is often very difficult to meet all INCOSE guidelines
+in a single requirement statement.  It will also perform separate AI evaluation calls for each
+requirement which can take a lot of time. If you wish to perform fewer AI calls and evaluate your 
+requirements as a set, use the `eval-spec` command instead.
 
-### AaC Check
+### Eval-Spec Command
 
-This plugin adds a constraint plugin to AaC.  Now when you run `aac check my_arch_model.aac` 
-any `req` elements defined in your model will 
-have the shall statement evaluated for quality.  If the LLM determines the requirement meets
-the quality guidance the constraint will pass.  Otherwise the constraint will fail.
+This plugin provides a new command called `eval-spec` that will execute the requirements specification QA
+on a specified AaC file.  This will perform a wholistic review of the requirement specification and all
+the included requirements against the INCOSE requirements quality guidelines.  For instances where
+the quality of requirements need to be assessed in context, this is a good solution.
+
 
 ## Caveat
 

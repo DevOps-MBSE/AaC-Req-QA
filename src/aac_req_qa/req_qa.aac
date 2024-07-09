@@ -12,9 +12,12 @@ plugin:
           type: file
           description: |
             A path to a YAML file containing an AaC-defined requirements to evaluate.
-  schema_constraints:
-    - name: Shall statement quality
-      description: |
-        Check requirement shall statement to ensure it meets good system engineering quality standards.
-      universal: true
+    - name: eval-spec
+      help_text: |
+        Perform AI analysis on requirement specifications, evaluating each spec as a collection for broader consideration and feedback.
+      input:
+        - name: architecture-file
+          type: file
+          description: |
+            A path to a YAML file containing an AaC-defined requirement specification to evaluate.
     

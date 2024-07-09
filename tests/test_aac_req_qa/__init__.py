@@ -1,1 +1,1 @@
-"""Tests for the AaC Req QA plugin."""
+"""This file is intentionally empty."""

@@ -1,16 +1,32 @@
+req_spec:
+  name: Test
+  description: A spec containing good requirements.
+  requirements:
+    - REQ_TEST_01
+    - REQ_TEST_02
+    - REQ_TEST_03
+    - REQ_TEST_04
+
+---
 req:
   name: Test 01
   id: REQ_TEST_01
-  shall:  The req qa shall report a quality score for each requirement in the AaC model.
+  shall:  The req-qa tool shall report a quality score as a letter grade for each requirement in the AaC model.
 
 ---
 req:
   name: Test 02
   id: REQ_TEST_02
-  shall:  The req qa shall pass if the quality score is a PASS.
+  shall:  The req-qa tool shall pass if the AI generated quality score is 'A (Excellent)' or 'B (High)'.
 
 ---
 req:
   name: Test 03
   id: REQ_TEST_03
-  shall:  The req qa shall fail if the quality score is a FAIL.
+  shall:  The req-qa tool shall fail if the AI generated quality score is 'C (Medium)', 'D (Low)', or 'F (Poor)'.
+
+---
+req:
+  name: Test 04
+  id: REQ_TEST_04
+  shall:  The aac team shall develop and release a document titled System Engineering Management as Code Plan.

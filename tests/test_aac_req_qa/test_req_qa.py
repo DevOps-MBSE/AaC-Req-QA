@@ -9,7 +9,7 @@ from click.testing import CliRunner
 
 from aac.context.language_context import LanguageContext
 from aac.execute.command_line import cli, initialize_cli
-from aac_req_qa.req_qa_impl import shall_statement_quality
+from aac_req_qa.req_qa_impl import (shall_statement_quality)
 
 # Thanks to sfc-gh-jcarroll
 # openai test mock taken from:  https://github.com/openai/openai-python/issues/715#issuecomment-1809203346
@@ -81,16 +81,28 @@ def create_stream_chat_completion(response: str, role: str = "assistant"):
         )
 
 
-GOOD_RESPONSE = """
-This is a mocked test result for an good shall statement.
+GOOD_REQ_RESPONSE = """
+This is a mocked test result for a good shall statement.
 
 REQUIREMENT RATING: REQ-QA-PASS (Good Requirement)
 """
 
-BAD_RESPONSE = """
-This is a mocked test result for an good shall statement.
+BAD_REQ_RESPONSE = """
+This is a mocked test result for a bad shall statement.
 
 REQUIREMENT RATING: REQ-QA-FAIL (Bad Requirement)
+"""
+
+GOOD_SPEC_RESPONSE = """
+This is a mocked test result for a good requirement spec.
+
+REQUIREMENT RATING: REQ-QA-PASS (Good Requirements)
+"""
+
+BAD_SPEC_RESPONSE = """
+This is a mocked test result for a bad requirement spec.
+
+REQUIREMENT RATING: REQ-QA-FAIL (Bad Requirements)
 """
 
 
@@ -136,11 +148,11 @@ class TestReqQA(TestCase):
     @patch("openai.resources.chat.Completions.create")
     def test_cli_eval_req(self, openai_create):
 
-        openai_create.return_value = create_chat_completion(GOOD_RESPONSE)
+        openai_create.return_value = create_chat_completion(GOOD_REQ_RESPONSE)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             aac_file_path = os.path.join(os.path.dirname(__file__), "good_reqs.aac")
-            temp_aac_file_path = os.path.join(temp_dir, "my_plugin.aac")
+            temp_aac_file_path = os.path.join(temp_dir, "my_reqs.aac")
             shutil.copy(aac_file_path, temp_aac_file_path)
 
             args = [temp_aac_file_path]
@@ -151,7 +163,7 @@ class TestReqQA(TestCase):
     @patch("openai.resources.chat.Completions.create")
     def test_cli_eval_req_failure(self, openai_create):
 
-        openai_create.return_value = create_chat_completion(BAD_RESPONSE)
+        openai_create.return_value = create_chat_completion(BAD_REQ_RESPONSE)
 
         with tempfile.TemporaryDirectory() as temp_dir:
             aac_file_path = os.path.join(os.path.dirname(__file__), "bad_reqs.aac")
@@ -171,7 +183,7 @@ class TestReqQA(TestCase):
             self.fail("Expected to find one and only one Schema definition")
         schema_definition = schema_definition[0]
         definitions = context.parse_and_load(root_schema)
-        result = shall_statement_quality(definitions[0].instance, definitions[0], schema_definition.instance)
+        result = shall_statement_quality(definitions[0])
         self.assertTrue(result.is_success())
 
     def test_shall_statement_quality_no_env_vars(self):
@@ -186,13 +198,13 @@ class TestReqQA(TestCase):
             self.fail("Expected to find one and only one Requirement definition")
         requirement_definition = requirement_definition[0]
         definitions = context.parse_and_load(req_schema)
-        result = shall_statement_quality(definitions[0].instance, definitions[0], requirement_definition.instance)
+        result = shall_statement_quality(definitions[0])
         self.assertFalse(result.is_success())
 
     @patch("openai.resources.chat.Completions.create")
     def test_shall_statement_quality(self, openai_create):
 
-        openai_create.return_value = create_chat_completion(GOOD_RESPONSE)
+        openai_create.return_value = create_chat_completion(GOOD_REQ_RESPONSE)
 
         context = LanguageContext()
         requirement_definition = context.get_definitions_by_name("aac.lang.Requirement")
@@ -200,13 +212,13 @@ class TestReqQA(TestCase):
             self.fail("Expected to find one and only one Requirement definition")
         requirement_definition = requirement_definition[0]
         definitions = context.parse_and_load(req_schema)
-        result = shall_statement_quality(definitions[0].instance, definitions[0], requirement_definition.instance)
+        result = shall_statement_quality(definitions[0])
         self.assertTrue(result.is_success())
 
     @patch("openai.resources.chat.Completions.create")
     def test_shall_statement_quality_failure(self, openai_create):
 
-        openai_create.return_value = create_chat_completion(BAD_RESPONSE)
+        openai_create.return_value = create_chat_completion(BAD_REQ_RESPONSE)
 
         context = LanguageContext()
         requirement_definition = context.get_definitions_by_name("aac.lang.Requirement")
@@ -214,8 +226,48 @@ class TestReqQA(TestCase):
             self.fail("Expected to find one and only one Requirement definition")
         requirement_definition = requirement_definition[0]
         definitions = context.parse_and_load(req_schema)
-        result = shall_statement_quality(definitions[0].instance, definitions[0], requirement_definition.instance)
+        result = shall_statement_quality(definitions[0])
         self.assertFalse(result.is_success())
+
+    def run_eval_spec_cli_command_with_args(self, args: list[str]) -> Tuple[int, str]:
+        """Utility function to invoke the CLI command with the given arguments."""
+        initialize_cli()
+        runner = CliRunner()
+        result = runner.invoke(cli, ["eval-spec"] + args)
+        exit_code = result.exit_code
+        std_out = str(result.stdout)
+        output_message = std_out.strip().replace("\x1b[0m", "")
+        return exit_code, output_message
+
+    @patch("openai.resources.chat.Completions.create")
+    def test_cli_eval_spec(self, openai_create):
+
+        openai_create.return_value = create_chat_completion(GOOD_SPEC_RESPONSE)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            aac_file_path = os.path.join(os.path.dirname(__file__), "good_reqs.aac")
+            temp_aac_file_path = os.path.join(temp_dir, "my_reqs.aac")
+            shutil.copy(aac_file_path, temp_aac_file_path)
+
+            args = [temp_aac_file_path]
+            exit_code, output_message = self.run_eval_spec_cli_command_with_args(args)
+        
+            self.assertEqual(0, exit_code, f"Expected success but failed with message: {output_message}")  # asserts the command ran successfully
+
+    @patch("openai.resources.chat.Completions.create")
+    def test_cli_eval_spec_failure(self, openai_create):
+        
+        openai_create.return_value = create_chat_completion(BAD_SPEC_RESPONSE)
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            aac_file_path = os.path.join(os.path.dirname(__file__), "good_reqs.aac")
+            temp_aac_file_path = os.path.join(temp_dir, "my_reqs.aac")
+            shutil.copy(aac_file_path, temp_aac_file_path)
+
+            args = [temp_aac_file_path]
+            exit_code, output_message = self.run_eval_spec_cli_command_with_args(args)
+        
+            self.assertNotEqual(0, exit_code)
 
 
 root_schema = """
@@ -230,6 +282,20 @@ schema:
 """
 
 req_schema = """
+req:
+  name: Test Requirement
+  id: REQ_TEST_01
+  shall:  The req qa shall evaluate the quality of the requirement.
+"""
+
+req_spec_schema = """
+req_spec:
+  name: Test Requirement Spec
+  description:  This is a test requirement spec.
+  requirements: 
+    - REQ_TEST_01
+
+---
 req:
   name: Test Requirement
   id: REQ_TEST_01

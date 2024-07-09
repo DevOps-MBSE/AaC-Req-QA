@@ -1,3 +1,13 @@
+req_spec:
+  name: Test
+  description: A spec containing good requirements.
+  requirements:
+    - REQ_TEST_01
+    - REQ_TEST_02
+    - REQ_TEST_03
+    - REQ_TEST_04
+
+---
 req:
   name: Test 01
   id: REQ_TEST_01

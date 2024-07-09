@@ -1,3 +1,12 @@
+req_spec:
+  name: Test
+  description: A spec containing bad requirements.
+  requirements:
+    - REQ_TEST_01
+    - REQ_TEST_02
+    - REQ_TEST_03
+
+---
 req:
   name: Test 01
   id: REQ_TEST_01
